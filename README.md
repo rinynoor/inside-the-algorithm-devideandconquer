@@ -32,9 +32,7 @@ This helps students visualize how recursion moves toward the base case and how t
 
 Open the interactive learning page:
 
-👉 [🚀 Buka Interactive Learning — Week 05](https://rinynoor.github.io/inside-the-algorithm-devideandconquer/Inside_the_Algorithm_Week05_DevideAndConquer.html) 
-
-> Replace `REPOSITORY-NAME` with the actual GitHub repository name.
+👉 [🚀 Buka Interactive Learning — Week 05](https://rinynoor.github.io/inside-the-algorithm-devideandconquer/Inside_the_Algorithm_Week05_DevideAndConquer.html)
 
 For the best experience, open the page using a desktop or laptop browser.
 
