@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inside the Algorithm — Week 05 Divide and Conquer</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#182230;--muted:#667085;--line:#e4e7ec;--purple:#4f46e5;--blue:#0284c7;--green:#16803c;--orange:#b54708;--red:#b42318;--soft:#eef2ff}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+.hero{padding:42px 18px;background:linear-gradient(125deg,#111827,#312e81 60%,#075985);color:#fff}.wrap{max-width:1050px;margin:auto}
+.eyebrow{text-transform:uppercase;font-size:12px;font-weight:900;letter-spacing:.12em;opacity:.78}h1{font-size:clamp(34px,6vw,60px);line-height:1;margin:8px 0 13px;letter-spacing:-.045em}
+.lead{font-size:18px;max-width:800px;color:#e0e7ff}.pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#ffffff17;border:1px solid #ffffff26;margin:4px 4px 0 0;font-size:13px}
+nav{position:sticky;top:0;z-index:10;background:#ffffffed;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}nav .wrap{display:flex;gap:5px;overflow:auto;padding:9px 12px}
+nav button{white-space:nowrap;border:0;background:transparent;padding:8px 10px;border-radius:9px;font-weight:800;color:#475467;cursor:pointer}
+main{padding:20px 14px 70px}.section{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:clamp(19px,4vw,34px);margin:18px 0;box-shadow:0 8px 30px #10182808}
+.kicker{color:var(--purple);font-size:12px;font-weight:950;letter-spacing:.09em;text-transform:uppercase}h2{font-size:clamp(25px,4vw,38px);line-height:1.12;margin:6px 0 10px}h3{margin:24px 0 9px}
+.callout{border-left:4px solid var(--purple);background:#f8f9ff;border-radius:10px;padding:14px 16px;margin:15px 0}.note{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.btn{border:0;border-radius:10px;padding:11px 15px;background:var(--purple);color:#fff;font-weight:850;cursor:pointer}.btn.ghost{background:#f2f4f7;color:#344054}.btn:disabled{opacity:.4;cursor:not-allowed}
+.board{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:16px;padding:18px;margin:12px 0;min-height:130px}
+.arr{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0}.cell{width:55px;height:55px;border:2px solid #cbd5e1;background:#fff;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:19px;transition:.2s}
+.cell.focus{border-color:var(--purple);background:#eef2ff;transform:translateY(-3px)}.cell.good{border-color:#86efac;background:#f0fdf4}.cell.off{opacity:.18}.cell.pick{border-color:#38bdf8;background:#e0f2fe}.cell.stop{border-color:#fdba74;background:#fff7ed}
+.explain{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}.tag{font-size:12px;font-weight:950;text-align:center;padding:7px;border-radius:8px;background:#eef2ff;color:#3730a3}
+.explain b{display:block;margin-bottom:4px}.question{background:#eff6ff;border:1px solid #bfdbfe;border-radius:13px;padding:14px;margin:13px 0}.question button{margin:6px 5px 0 0;border:1px solid #cbd5e1;background:#fff;border-radius:9px;padding:8px 12px;font-weight:750;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.mini{border:1px solid var(--line);border-radius:14px;padding:15px;background:#fcfcfd}
+.code{background:#101828;color:#e5e7eb;padding:17px;border-radius:14px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;white-space:pre-wrap}
+.tree{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#101828;color:#e5e7eb;border-radius:14px;padding:17px;white-space:pre-wrap;overflow:auto}
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:9px}.metric{border:1px solid var(--line);background:#f9fafb;border-radius:11px;padding:10px}.metric b{font-size:18px;display:block}.metric span{font-size:11px;color:var(--muted)}
+.progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress div{height:100%;background:linear-gradient(90deg,#4f46e5,#0284c7);width:0;transition:.3s}
+.ok{color:var(--green)}.bad{color:var(--red)}.muted{color:var(--muted)}.center{text-align:center}.hidden{display:none}
+.quiz button,.check button{display:block;width:100%;text-align:left;margin:7px 0;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+footer{text-align:center;color:#667085;padding:25px;font-size:13px}
+@media(max-width:620px){.explain{grid-template-columns:1fr}.cell{width:47px;height:47px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+<div class="eyebrow">INF203 • Week 05 • Pembelajaran Asynchronous</div>
+<h1>Inside the Algorithm</h1>
+<p class="lead"><b>Divide and Conquer — Interactive Tutor.</b><br>Jangan mulai dari definisi. Ikuti algoritmanya satu langkah demi satu langkah sampai Anda dapat menjelaskan sendiri apa yang terjadi.</p>
+<span class="pill">Divide and Conquer</span><span class="pill">Merge Sort</span><span class="pill">recursion</span><span class="pill">base case</span><span class="pill">Binary Search</span><span class="pill">time complexity</span>
+</div></header>
+<nav><div class="wrap">
+<button onclick="go('intro')">Mulai</button><button onclick="go('merge')">Trace Merge Sort</button><button onclick="go('rec')">Recursion</button><button onclick="go('binary')">Binary Search</button><button onclick="go('complex')">Complexity</button><button onclick="go('check')">Self-Check</button><button onclick="go('activity')">Aktivitas LMS</button>
+</div></nav>
+<main class="wrap">
+
+<section class="section" id="intro">
+<div class="kicker">0 • Mulai dari problem</div><h2>Urutkan empat angka ini.</h2>
+<p>Problem pertama sengaja sangat kecil. Kita ingin memahami <b>cara berpikir algoritma</b>, bukan sibuk dengan banyak data.</p>
+<div class="board"><div class="arr"><div class="cell">38</div><div class="cell">12</div><div class="cell">27</div><div class="cell">5</div></div><p class="center"><b>Target:</b> [5, 12, 27, 38]</p></div>
+<div class="question"><b>Sebelum melihat algoritma:</b> jika empat angka terasa terlalu banyak untuk ditangani sekaligus, apa yang bisa kita lakukan?<br>
+<button onclick="introAns(false,this)">Acak kembali</button><button onclick="introAns(true,this)">Bagi menjadi kelompok lebih kecil</button><button onclick="introAns(false,this)">Hapus satu angka</button><div id="introFb"></div></div>
+<div class="callout hidden" id="introReveal"><b>Ide kuncinya:</b> kita dapat memecah satu problem besar menjadi problem yang lebih kecil. Tetapi kita belum akan menghafal istilahnya. Mari lihat apa yang benar-benar dilakukan algoritma.</div>
+</section>
+
+<section class="section" id="merge">
+<div class="kicker">1 • Micro-step trace</div><h2>Merge Sort — satu klik, satu kejadian</h2>
+<p>Setiap klik <b>Langkah Berikutnya</b> hanya melakukan satu hal. Baca bagian <b>Apa yang terjadi?</b> dan <b>Mengapa?</b> sebelum melanjutkan.</p>
+<div class="progress"><div id="mProg"></div></div>
+<div class="status"><div class="metric"><b id="mNo">0</b><span>Langkah</span></div><div class="metric"><b id="mPhase">MULAI</b><span>Tahap</span></div><div class="metric"><b id="mDirection">—</b><span>Arah recursion</span></div></div>
+<div class="board" id="mBoard"></div>
+<div class="explain"><div class="tag" id="mTag">MULAI</div><div><b id="mWhat">Apa yang terjadi?</b><span id="mWhy"></span></div></div>
+<div class="question hidden" id="mQuestion"><b id="mQ"></b><div id="mChoices"></div><div id="mQfb"></div></div>
+<div class="btns"><button class="btn" id="mNext" onclick="mNext()">Langkah Berikutnya →</button><button class="btn ghost" onclick="mReset()">Mulai Ulang</button></div>
+</section>
+
+<section class="section" id="rec">
+<div class="kicker">2 • Memahami recursion</div><h2>Recursion itu “turun”, lalu “kembali naik”.</h2>
+<p>Kesalahan umum adalah mengira recursion hanya berarti fungsi memanggil dirinya sendiri. Untuk memahami Merge Sort, lihat <b>alur pemanggilannya</b>.</p>
+<div class="tree" id="rTree">merge_sort([38, 12, 27, 5])  ← kita mulai di sini</div>
+<div class="explain"><div class="tag" id="rTag">CALL</div><div><b id="rTitle">Apa yang sedang dilakukan program?</b><span id="rText">Program memanggil merge_sort untuk problem awal.</span></div></div>
+<div class="btns"><button class="btn" id="rNext" onclick="rNext()">Ikuti Recursive Call →</button><button class="btn ghost" onclick="rReset()">Ulangi</button></div>
+<div class="callout hidden" id="rConclusion"><b>Sekarang perhatikan polanya:</b> recursive call membawa kita <b>turun</b> menuju input yang semakin kecil. Saat mencapai <b>base case</b>, pemanggilan berhenti. Setelah itu hasil <b>kembali naik</b> ke pemanggilan sebelumnya untuk proses combine/merge.</div>
+</section>
+
+<section class="section" id="binary">
+<div class="kicker">3 • Strategi sama, algoritma berbeda</div><h2>Binary Search — mengapa setengah data boleh dibuang?</h2>
+<p>Target kita adalah <b>73</b>. Data sudah terurut. Klik satu langkah pada satu waktu.</p>
+<div class="arr" id="bArr"></div>
+<div class="status"><div class="metric"><b id="bMid">—</b><span>middle</span></div><div class="metric"><b id="bCmp">0</b><span>comparison</span></div><div class="metric"><b id="bRemain">15</b><span>kandidat tersisa</span></div></div>
+<div class="explain"><div class="tag">SEARCH</div><div><b id="bTitle">Mulai</b><span id="bText">Kita belum memeriksa semua angka. Binary Search terlebih dahulu melihat nilai di tengah.</span></div></div>
+<div class="btns"><button class="btn" onclick="bNext()">Step Search →</button><button class="btn ghost" onclick="bReset()">Ulangi</button></div>
+<div class="callout"><b>Perhatikan:</b> Binary Search menggunakan ide membagi problem, tetapi setelah comparison kita hanya melanjutkan ke <b>satu bagian yang mungkin berisi target</b>. Tidak ada proses merge seperti pada Merge Sort.</div>
+</section>
+
+<section class="section" id="complex">
+<div class="kicker">4 • Dari trace ke analisis</div><h2>Mengapa Merge Sort Θ(n log n)?</h2>
+<p>Kita tarik kesimpulan dari proses yang sudah Anda lihat, bukan dari hafalan rumus.</p>
+<div class="grid">
+<div class="mini"><h3>① Problem terus dibagi dua</h3><p>Misalnya ukuran input 8: <b>8 → 4 → 2 → 1</b>. Jumlah level pembagian tumbuh seperti <b>log n</b>.</p></div>
+<div class="mini"><h3>② Pada proses merge</h3><p>Elemen-elemen pada setiap level perlu diperiksa dan digabungkan. Total pekerjaan pada satu level kira-kira <b>n</b>.</p></div>
+<div class="mini"><h3>③ Gabungkan pengamatan</h3><p><b>n pekerjaan × log n level = Θ(n log n)</b>.</p></div>
+</div>
+<div class="callout"><b>Recurrence:</b> T(n) = 2T(n/2) + Θ(n). Artinya: dua subproblem berukuran n/2 diselesaikan, lalu hasilnya di-merge dengan pekerjaan linear.</div>
+</section>
+
+<section class="section" id="check">
+<div class="kicker">5 • Self-check</div><h2>Jangan lanjut jika konsep ini belum jelas.</h2>
+<div class="quiz">
+<p><b>1. Apakah recursion dan Divide and Conquer merupakan hal yang sama?</b></p>
+<button onclick="q(1,false)">Ya, semua recursion pasti Divide and Conquer.</button><button onclick="q(1,true)">Tidak. Recursion adalah teknik; Divide and Conquer adalah strategi desain problem.</button><div id="q1"></div>
+<p><b>2. Pada Merge Sort, mengapa [38] disebut base case?</b></p>
+<button onclick="q(2,true)">Karena satu elemen sudah terurut dan tidak perlu dibagi lagi.</button><button onclick="q(2,false)">Karena 38 adalah angka terbesar.</button><div id="q2"></div>
+<p><b>3. Apa fungsi Combine pada Merge Sort?</b></p>
+<button onclick="q(3,false)">Membagi list lagi.</button><button onclick="q(3,true)">Menggabungkan subproblem yang sudah terurut menjadi solusi yang lebih besar.</button><div id="q3"></div>
+<p><b>4. Mengapa Binary Search dapat membuang setengah data?</b></p>
+<button onclick="q(4,true)">Karena data terurut sehingga comparison dengan middle menunjukkan bagian yang tidak mungkin berisi target.</button><button onclick="q(4,false)">Karena recursion selalu membuang setengah data.</button><div id="q4"></div>
+</div>
+</section>
+
+<section class="section" id="activity">
+<div class="kicker">6 • Setelah selesai belajar</div><h2>Aktivitas Week 05 di LMS</h2>
+<div class="note"><b>Halaman ini adalah media belajar mandiri.</b> Tidak ada jawaban dari halaman ini yang perlu di-upload. Setelah selesai, kembali ke LMS.</div>
+
+<h3>💬 Discussion Forum — Is Recursion Always Divide and Conquer?</h3>
+<p>Setelah melihat recursion, Merge Sort, dan Binary Search, jawab pertanyaan berikut di forum LMS:</p>
+<div class="callout"><b>Apakah setiap algoritma recursive dapat disebut sebagai algoritma Divide and Conquer? Mengapa?</b></div>
+<p>Dalam jawaban Anda:</p>
+<ul><li>jelaskan perbedaan <b>recursion</b> dan <b>Divide and Conquer</b> dengan bahasa sendiri;</li><li>berikan satu contoh sederhana;</li><li>identifikasi apakah ada proses <b>Divide, Conquer, dan Combine</b>;</li><li>jelaskan alasan kesimpulan Anda;</li><li>berikan minimal <b>satu tanggapan bermakna</b> terhadap jawaban teman.</li></ul>
+<div class="callout"><b>Focus:</b> Recursion adalah <b>teknik implementasi</b>. Divide and Conquer adalah <b>problem-solving strategy</b>.</div>
+
+<h3>💻 Praktikum P05 — Google Colab</h3>
+<p>Kerjakan Praktikum P05 sesuai instruksi LMS. File pekerjaan disimpan sebagai:</p>
+<div class="board center"><b style="font-size:24px">P05_NIM_Nama.ipynb</b><p>Submit melalui <b>LMS → Week 05 Practicum — Divide and Conquer</b>.</p></div>
+<div class="check">
+<button onclick="tick(this)">☐ Saya sudah mengikuti trace Merge Sort sampai selesai.</button>
+<button onclick="tick(this)">☐ Saya memahami recursion turun ke base case lalu kembali naik.</button>
+<button onclick="tick(this)">☐ Saya memahami perbedaan Merge Sort dan Binary Search dalam menggunakan strategi Divide and Conquer.</button>
+<button onclick="tick(this)">☐ Saya siap menjawab Discussion Forum di LMS.</button>
+<button onclick="tick(this)">☐ Saya siap mengerjakan Praktikum P05 di Google Colab dan submit ke LMS.</button>
+</div>
+</section>
+</main>
+<footer>INF203 • Week 05 • Inside the Algorithm — Divide and Conquer<br>Belajar mandiri asynchronous → diskusi LMS → praktikum Google Colab → submit LMS.</footer>
+
+<script>
+function go(id){document.getElementById(id).scrollIntoView({behavior:'smooth'})}
+function introAns(ok,el){document.getElementById('introFb').innerHTML=ok?'<p class="ok"><b>Benar.</b> Membagi problem dapat membuatnya lebih mudah ditangani. Sekarang kita lihat bagaimana algoritma melakukan hal itu.</p>':'<p class="bad">Belum tepat. Coba pikirkan bagaimana membuat problem yang sama menjadi lebih kecil.</p>';if(ok)document.getElementById('introReveal').classList.remove('hidden')}
+
+const steps=[
+{p:'MULAI',d:'—',board:'<div class="arr"><div class="cell">38</div><div class="cell">12</div><div class="cell">27</div><div class="cell">5</div></div>',what:'Problem awal',why:'Kita memiliki empat angka yang belum terurut. Tujuan akhirnya adalah [5, 12, 27, 38]. Belum ada proses sorting yang dilakukan.'},
+{p:'DIVIDE',d:'↓ turun',board:'<div class="arr"><div class="cell focus">38</div><div class="cell focus">12</div><span style="align-self:center">│</span><div class="cell pick">27</div><div class="cell pick">5</div></div>',what:'Langkah 1 — Bagi problem menjadi dua bagian',why:'Empat elemen dibagi menjadi dua subproblem: [38,12] dan [27,5]. Mengapa? Karena kita ingin menyelesaikan problem yang lebih kecil terlebih dahulu.'},
+{p:'DIVIDE',d:'↓ turun',board:'<p class="center"><b>Fokus ke subproblem kiri: [38,12]</b></p><div class="arr"><div class="cell focus">38</div><span style="align-self:center">│</span><div class="cell focus">12</div></div>',what:'Langkah 2 — [38,12] masih dapat dibagi',why:'Ukuran subproblem masih 2. Merge Sort membaginya lagi menjadi [38] dan [12]. Setiap recursive call menerima input yang lebih kecil.'},
+{p:'BASE CASE',d:'● berhenti',board:'<div class="arr"><div class="cell stop">38</div><div class="cell stop">12</div></div><p class="center ok"><b>Ukuran masing-masing list = 1 → STOP</b></p>',what:'Langkah 3 — Kita mencapai base case',why:'List [38] dan [12] hanya memiliki satu elemen. Satu elemen sendirian pasti sudah terurut, sehingga tidak perlu dibagi lagi. Base case membuat recursion berhenti.'},
+{p:'COMBINE',d:'↑ naik',board:'<p class="center">Bandingkan elemen pertama:</p><div class="arr"><div class="cell focus">38</div><b style="align-self:center">vs</b><div class="cell focus">12</div></div>',what:'Langkah 4 — Mulai kembali naik: 38 vs 12',why:'Sekarang kita melakukan merge. Bandingkan 38 dengan 12. Nilai yang lebih kecil harus masuk lebih dahulu ke hasil.' ,q:'Mana yang masuk lebih dahulu?',choices:[['38',false],['12',true]]},
+{p:'COMBINE',d:'↑ naik',board:'<div class="arr"><div class="cell good">12</div><div class="cell good">38</div></div><p class="center"><b>[38] + [12] → [12,38]</b></p>',what:'Langkah 5 — Subproblem kiri selesai',why:'12 lebih kecil dari 38, jadi 12 ditempatkan lebih dahulu. Setelah itu 38. Hasil subproblem kiri adalah [12,38].'},
+{p:'DIVIDE',d:'↓ turun',board:'<p class="center"><b>Sekarang subproblem kanan: [27,5]</b></p><div class="arr"><div class="cell focus">27</div><span style="align-self:center">│</span><div class="cell focus">5</div></div>',what:'Langkah 6 — Bagi [27,5]',why:'Dengan aturan yang sama, [27,5] dibagi menjadi [27] dan [5]. Keduanya langsung mencapai base case karena ukurannya 1.'},
+{p:'COMBINE',d:'↑ naik',board:'<p class="center">Bandingkan:</p><div class="arr"><div class="cell focus">27</div><b style="align-self:center">vs</b><div class="cell focus">5</div></div>',what:'Langkah 7 — Merge [27] dan [5]',why:'Kita bandingkan 27 dan 5. Yang lebih kecil ditempatkan lebih dahulu.',q:'Mana yang masuk lebih dahulu?',choices:[['27',false],['5',true]]},
+{p:'COMBINE',d:'↑ naik',board:'<div class="arr"><div class="cell good">5</div><div class="cell good">27</div></div><p class="center"><b>[27] + [5] → [5,27]</b></p>',what:'Langkah 8 — Subproblem kanan selesai',why:'5 lebih kecil dari 27, sehingga hasilnya [5,27]. Sekarang kita memiliki dua list yang sudah terurut: [12,38] dan [5,27].'},
+{p:'COMBINE',d:'↑ naik',board:'<p class="center"><b>[12,38] + [5,27]</b></p><div class="arr"><div class="cell focus">12</div><div class="cell">38</div><b style="align-self:center">vs</b><div class="cell focus">5</div><div class="cell">27</div></div><p class="center">Hasil sementara: [ ]</p>',what:'Langkah 9 — Final merge, comparison #1',why:'Bandingkan elemen paling depan dari kedua list: 12 vs 5. Ambil yang lebih kecil.',q:'Elemen mana yang masuk ke hasil?',choices:[['12',false],['5',true]]},
+{p:'COMBINE',d:'↑ naik',board:'<p class="center"><b>[12,38] + [27]</b></p><div class="arr"><div class="cell focus">12</div><div class="cell">38</div><b style="align-self:center">vs</b><div class="cell focus">27</div></div><p class="center">Hasil sementara: <b>[5]</b></p>',what:'Langkah 10 — Final merge, comparison #2',why:'5 sudah dipindahkan ke hasil. Sekarang bandingkan 12 dengan 27.',q:'Elemen mana berikutnya?',choices:[['12',true],['27',false]]},
+{p:'COMBINE',d:'↑ naik',board:'<p class="center"><b>[38] + [27]</b></p><div class="arr"><div class="cell focus">38</div><b style="align-self:center">vs</b><div class="cell focus">27</div></div><p class="center">Hasil sementara: <b>[5,12]</b></p>',what:'Langkah 11 — Final merge, comparison #3',why:'12 sudah masuk ke hasil. Sekarang bandingkan 38 dengan 27.',q:'Elemen mana berikutnya?',choices:[['38',false],['27',true]]},
+{p:'COMBINE',d:'↑ naik',board:'<p class="center">List kanan sudah habis.</p><div class="arr"><div class="cell good">5</div><div class="cell good">12</div><div class="cell good">27</div><div class="cell focus">38</div></div>',what:'Langkah 12 — Ambil elemen yang tersisa',why:'Setelah 27 masuk, list kanan sudah tidak memiliki elemen. Maka 38 yang tersisa langsung ditempatkan di akhir.'},
+{p:'SELESAI',d:'✓ selesai',board:'<div class="arr"><div class="cell good">5</div><div class="cell good">12</div><div class="cell good">27</div><div class="cell good">38</div></div><p class="center ok"><b>Hasil akhir: [5,12,27,38]</b></p>',what:'Trace selesai',why:'Anda baru saja melihat seluruh pola: DIVIDE membuat problem semakin kecil → BASE CASE menghentikan recursion → COMBINE membangun kembali solusi dari kecil menjadi besar.'}
+];
+let mi=0,locked=false;
+function showM(){let s=steps[mi];document.getElementById('mNo').textContent=mi;document.getElementById('mPhase').textContent=s.p;document.getElementById('mDirection').textContent=s.d;document.getElementById('mBoard').innerHTML=s.board;document.getElementById('mTag').textContent=s.p;document.getElementById('mWhat').textContent=s.what;document.getElementById('mWhy').textContent=s.why;document.getElementById('mProg').style.width=(mi/(steps.length-1)*100)+'%';let qb=document.getElementById('mQuestion');document.getElementById('mQfb').innerHTML='';if(s.q){locked=true;qb.classList.remove('hidden');document.getElementById('mQ').textContent=s.q;document.getElementById('mChoices').innerHTML=s.choices.map((c,i)=>`<button onclick="mAnswer(${c[1]},this)">${c[0]}</button>`).join('')}else{locked=false;qb.classList.add('hidden')}document.getElementById('mNext').disabled=mi===steps.length-1||locked}
+function mNext(){if(!locked&&mi<steps.length-1){mi++;showM()}}function mReset(){mi=0;showM()}function mAnswer(ok,el){if(ok){document.getElementById('mQfb').innerHTML='<p class="ok"><b>Benar ✓</b> Nilai yang lebih kecil dipindahkan ke hasil merge.</p>';locked=false;document.getElementById('mNext').disabled=false}else document.getElementById('mQfb').innerHTML='<p class="bad">Belum tepat. Bandingkan kembali kedua nilai dan pilih yang lebih kecil.</p>'}showM();
+
+const rs=[
+["CALL","merge_sort([38, 12, 27, 5])","Problem awal berukuran 4. Belum base case, maka problem dibagi dan fungsi memanggil dirinya untuk bagian kiri."],
+["CALL ↓","merge_sort([38, 12, 27, 5])\n└─ merge_sort([38, 12])","Sekarang input lebih kecil: ukuran 2. Masih belum base case, sehingga fungsi memanggil dirinya lagi."],
+["CALL ↓","merge_sort([38, 12, 27, 5])\n└─ merge_sort([38, 12])\n   └─ merge_sort([38])","Ukuran input sekarang 1. Kita sudah mencapai base case."],
+["BASE CASE","merge_sort([38]) → [38]  ✓","Tidak ada recursive call lagi. [38] langsung dikembalikan sebagai list yang sudah terurut."],
+["RETURN ↑","kembali ke merge_sort([38, 12])\nsekarang proses cabang [12] → base case","Program kembali ke pemanggilan sebelumnya, menyelesaikan [12], lalu memiliki [38] dan [12]."],
+["COMBINE ↑","merge([38], [12]) → [12, 38]","Dua hasil kecil digabungkan. Inilah proses kembali naik dari recursion."],
+["KESIMPULAN","TURUN: problem makin kecil → BASE CASE → NAIK: hasil digabungkan","Recursion bukan sekadar 'fungsi memanggil dirinya'. Yang penting adalah memahami call, base case, return, dan apa yang dilakukan saat kembali."]
+];let ri=0;
+function showR(){let x=rs[ri];document.getElementById('rTag').textContent=x[0];document.getElementById('rTree').textContent=x[1];document.getElementById('rTitle').textContent=x[0];document.getElementById('rText').textContent=x[2];document.getElementById('rNext').disabled=ri===rs.length-1;if(ri===rs.length-1)document.getElementById('rConclusion').classList.remove('hidden')}
+function rNext(){if(ri<rs.length-1){ri++;showR()}}function rReset(){ri=0;document.getElementById('rConclusion').classList.add('hidden');showR()}showR();
+
+const bd=[2,5,8,12,17,21,29,34,41,48,55,61,67,73,81];let blo=0,bhi=14,bc=0,bfound=false;
+function drawB(mid=-1){document.getElementById('bArr').innerHTML=bd.map((v,i)=>`<div class="cell ${i<blo||i>bhi?'off':i===mid?'pick':''}">${v}</div>`).join('');document.getElementById('bRemain').textContent=bfound?1:bhi-blo+1;document.getElementById('bCmp').textContent=bc}
+function bNext(){if(bfound)return;let mid=Math.floor((blo+bhi)/2),v=bd[mid];bc++;document.getElementById('bMid').textContent=v;if(v===73){bfound=true;drawB(mid);document.getElementById('bTitle').textContent='Target ditemukan ✓';document.getElementById('bText').innerHTML=`${v} = 73. Target ditemukan setelah ${bc} comparison.`;return}if(v<73){document.getElementById('bTitle').textContent=`${v} < 73`;document.getElementById('bText').innerHTML=`Karena target 73 lebih besar dari middle ${v}, maka ${v} dan semua nilai di sebelah kirinya <b>tidak mungkin</b> menjadi target. Bagian itu dibuang.`;blo=mid+1}else{document.getElementById('bTitle').textContent=`${v} > 73`;document.getElementById('bText').innerHTML=`Karena target 73 lebih kecil dari middle ${v}, maka ${v} dan semua nilai di sebelah kanannya <b>tidak mungkin</b> menjadi target. Bagian itu dibuang.`;bhi=mid-1}drawB()}
+function bReset(){blo=0;bhi=14;bc=0;bfound=false;document.getElementById('bMid').textContent='—';document.getElementById('bTitle').textContent='Mulai';document.getElementById('bText').textContent='Kita belum memeriksa semua angka. Binary Search terlebih dahulu melihat nilai di tengah.';drawB()}bReset();
+
+function q(n,ok){document.getElementById('q'+n).innerHTML=ok?'<p class="ok"><b>Benar ✓</b></p>':'<p class="bad"><b>Belum tepat.</b> Kembali lihat bagian trace terkait lalu coba lagi.</p>'}
+function tick(el){let checked=el.textContent.trim().startsWith('☑');el.textContent=(checked?'☐':'☑')+el.textContent.trim().slice(1);el.style.background=checked?'#fff':'#f0fdf4';el.style.borderColor=checked?'var(--line)':'#86efac'}
+</script>
+</body></html>
